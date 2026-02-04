@@ -631,9 +631,9 @@ class GradeVisualizer {
       return '#ef4444'; // Red - F
     });
 
-    // Calculate dynamic height based on number of courses (25px per course, min 200px, max 600px)
-    const dynamicHeight = Math.min(600, Math.max(200, courseStats.length * 25));
-    chartContainer.style.height = `${dynamicHeight + 60}px`; // +60 for padding and title
+    // Calculate dynamic height based on number of courses (28px per course, min 250px, max 700px)
+    const dynamicHeight = Math.min(700, Math.max(250, courseStats.length * 28));
+    chartContainer.style.height = `${dynamicHeight + 100}px`; // +100 for padding, title, and axis labels
 
     this.charts.comparison = new Chart(ctx, {
       type: 'bar',
@@ -655,6 +655,14 @@ class GradeVisualizer {
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y', // Horizontal bars for better label readability
+        layout: {
+          padding: {
+            left: 10,
+            right: 30,
+            top: 10,
+            bottom: 40,
+          },
+        },
         plugins: {
           legend: {
             display: false,
@@ -682,15 +690,24 @@ class GradeVisualizer {
             title: {
               display: true,
               text: 'Grade (%)',
+              padding: { top: 15 },
+              font: { size: 14, weight: '500' },
             },
             ticks: {
               callback: (value) => value + '%',
+              padding: 8,
+              font: { size: 12 },
+            },
+            grid: {
+              drawTicks: true,
+              tickLength: 8,
             },
           },
           y: {
             ticks: {
               font: { size: 12 },
               autoSkip: false, // Show all labels, don't skip any
+              padding: 8,
             },
           },
         },
