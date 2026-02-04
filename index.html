@@ -1,103 +1,731 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Course Grade Trends Visualizer</title>
-    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-</head>
-<body>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI',
+          Roboto, sans-serif;
+        background: #f5f5f7;
+        min-height: 100vh;
+        color: #1d1d1f;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .container {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 80px 24px 60px;
+      }
+
+      /* Apple Hero Header */
+      header {
+        text-align: center;
+        margin-bottom: 60px;
+        padding: 40px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 32px;
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+      }
+
+      header h1 {
+        font-size: 56px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+        margin-bottom: 16px;
+        line-height: 1.07;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+      }
+
+      header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 21px;
+        font-weight: 400;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.4;
+      }
+
+      /* Upload Card */
+      .upload-section {
+        margin-bottom: 48px;
+      }
+
+      .upload-area {
+        background: #ffffff;
+        border: 2px dashed #d2d2d7;
+        border-radius: 24px;
+        padding: 64px 48px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .upload-area:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.04);
+        transform: scale(1.005);
+      }
+
+      .upload-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .upload-icon {
+        width: 64px;
+        height: 64px;
+        color: #86868b;
+        stroke-width: 1.5;
+      }
+
+      .upload-area:hover .upload-icon {
+        color: #667eea;
+      }
+
+      .upload-content p {
+        font-size: 19px;
+        color: #6e6e73;
+      }
+
+      .upload-content span {
+        color: #86868b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 500;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 980px;
+        font-size: 17px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+      }
+
+      .file-info {
+        margin-top: 24px;
+        padding: 16px 24px;
+        background: rgba(52, 199, 89, 0.1);
+        border-radius: 16px;
+        color: #34c759;
+        font-size: 15px;
+        font-weight: 500;
+        display: none;
+      }
+
+      .file-info.visible {
+        display: block;
+      }
+
+      /* Format Help */
+      .format-help {
+        margin-bottom: 48px;
+      }
+
+      .format-help details {
+        background: #ffffff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      }
+
+      .format-help summary {
+        padding: 20px 28px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 17px;
+        color: #1d1d1f;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .format-help summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .format-help summary::before {
+        content: '+';
+        font-size: 24px;
+        font-weight: 300;
+        color: #86868b;
+        width: 24px;
+      }
+
+      .format-help details[open] summary::before {
+        content: '−';
+      }
+
+      .format-content {
+        padding: 0 28px 28px;
+        font-size: 15px;
+        color: #6e6e73;
+        line-height: 1.6;
+      }
+
+      .format-content p {
+        margin-bottom: 12px;
+      }
+
+      .format-content ul {
+        margin: 12px 0 20px 24px;
+      }
+
+      .format-content li {
+        margin-bottom: 8px;
+      }
+
+      .format-content strong {
+        color: #1d1d1f;
+        font-weight: 600;
+      }
+
+      .format-content pre {
+        background: #f5f5f7;
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-family: 'SF Mono', Menlo, monospace;
+        overflow-x: auto;
+      }
+
+      /* Controls */
+      .controls {
+        background: #ffffff;
+        padding: 24px 28px;
+        border-radius: 20px;
+        margin-bottom: 32px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        align-items: center;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      }
+
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .control-group label {
+        font-weight: 500;
+        font-size: 15px;
+        color: #6e6e73;
+      }
+
+      .control-group select {
+        padding: 10px 36px 10px 16px;
+        border: 1px solid #d2d2d7;
+        border-radius: 12px;
+        font-size: 15px;
+        font-family: inherit;
+        background: #ffffff;
+        color: #1d1d1f;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2386868b' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        transition: border-color 0.2s;
+      }
+
+      .control-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+      }
+
+      .control-group input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        accent-color: #667eea;
+      }
+
+      /* Chart Cards */
+      .charts-section {
+        display: grid;
+        gap: 28px;
+      }
+
+      .chart-container {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .chart-container h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 28px;
+        color: #1d1d1f;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chart-container h2::before {
+        content: '';
+        width: 4px;
+        height: 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+      }
+
+      .chart-container canvas {
+        min-height: 450px;
+        max-height: 500px;
+      }
+
+      .chart-container:has(#comparisonChart) canvas {
+        max-height: none;
+      }
+
+      /* Stats Card */
+      .stats-container {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .stats-container h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 28px;
+        color: #1d1d1f;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .stats-container h2::before {
+        content: '';
+        width: 4px;
+        height: 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 20px;
+      }
+
+      .stat-card {
+        background: linear-gradient(145deg, #f8f9ff 0%, #f0f2ff 100%);
+        padding: 28px;
+        border-radius: 20px;
+        text-align: center;
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+        border: 1px solid rgba(102, 126, 234, 0.15);
+      }
+
+      .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 32px rgba(102, 126, 234, 0.15);
+      }
+
+      .stat-card .stat-value {
+        font-size: 42px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+
+      .stat-card .stat-label {
+        font-size: 12px;
+        color: #6e6e73;
+        margin-top: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .stat-card .stat-course {
+        font-size: 13px;
+        color: #86868b;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(102, 126, 234, 0.15);
+      }
+
+      .stat-card.positive .stat-value {
+        background: linear-gradient(135deg, #34c759 0%, #30d158 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .stat-card.negative .stat-value {
+        background: linear-gradient(135deg, #ff3b30 0%, #ff6961 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .stat-card.neutral .stat-value {
+        background: linear-gradient(135deg, #ff9500 0%, #ffb340 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Degree Progress */
+      .degree-progress-container {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      .degree-progress-container h2 {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 28px;
+        color: #1d1d1f;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .degree-progress-container h2::before {
+        content: '';
+        width: 4px;
+        height: 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+      }
+
+      .progress-overview {
+        margin-bottom: 28px;
+      }
+
+      .progress-bar-container {
+        margin-bottom: 24px;
+      }
+
+      .progress-bar {
+        height: 12px;
+        background: #e8e8ed;
+        border-radius: 6px;
+        overflow: hidden;
+        display: flex;
+      }
+
+      .progress-filled {
+        height: 100%;
+        transition: width 0.6s ease;
+      }
+
+      .progress-filled.satisfied {
+        background: linear-gradient(90deg, #34c759 0%, #30d158 100%);
+      }
+      .progress-filled.in-progress {
+        background: linear-gradient(90deg, #ff9500 0%, #ffb340 100%);
+      }
+
+      .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+      }
+
+      .progress-percent {
+        font-weight: 600;
+        font-size: 15px;
+        color: #1d1d1f;
+      }
+
+      .progress-stats {
+        display: flex;
+        gap: 56px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .progress-stat {
+        text-align: center;
+      }
+
+      .progress-stat .stat-number {
+        display: block;
+        font-size: 48px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .progress-stat .stat-number.satisfied {
+        color: #34c759;
+      }
+      .progress-stat .stat-number.in-progress {
+        color: #ff9500;
+      }
+      .progress-stat .stat-number.not-satisfied {
+        color: #ff3b30;
+      }
+
+      .progress-stat .stat-label {
+        font-size: 11px;
+        color: #6e6e73;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+      }
+
+      .requirements-section {
+        margin-top: 28px;
+        padding-top: 28px;
+        border-top: 1px solid #e8e8ed;
+      }
+
+      .requirements-section h3 {
+        font-size: 19px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #1d1d1f;
+      }
+
+      .remaining-credits {
+        font-size: 15px;
+        color: #6e6e73;
+        margin-bottom: 20px;
+      }
+
+      .requirements-list {
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .requirements-list li {
+        padding: 16px 20px;
+        background: #f5f5f7;
+        border-radius: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        transition: transform 0.2s ease;
+      }
+
+      .requirements-list li:hover {
+        transform: translateX(8px);
+      }
+
+      .not-satisfied-list li {
+        border-left: 4px solid #ff3b30;
+        background: linear-gradient(90deg, rgba(255, 59, 48, 0.05) 0%, #f5f5f7 100%);
+      }
+      .in-progress-list li {
+        border-left: 4px solid #ff9500;
+        background: linear-gradient(90deg, rgba(255, 149, 0, 0.05) 0%, #f5f5f7 100%);
+      }
+
+      .req-name {
+        font-size: 15px;
+        color: #1d1d1f;
+        font-weight: 500;
+      }
+
+      .req-remaining {
+        font-size: 13px;
+        color: #6e6e73;
+        background: #ffffff;
+        padding: 6px 12px;
+        border-radius: 8px;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .container {
+          padding: 48px 20px;
+        }
+        header h1 {
+          font-size: 36px;
+        }
+        header p {
+          font-size: 17px;
+        }
+        .upload-area {
+          padding: 48px 28px;
+        }
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 480px) {
+        header h1 {
+          font-size: 28px;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
     <div class="container">
-        <header>
-            <h1>Course Grade Trends Visualizer</h1>
-            <p>Upload your Workday academic report or grade data to visualize performance over time</p>
-        </header>
+      <header>
+        <h1>Course Grade Trends Visualizer</h1>
+        <p>
+          Upload your Workday academic report or grade data to visualize
+          performance over time
+        </p>
+      </header>
 
-        <section class="upload-section">
-            <div class="upload-area" id="dropZone">
-                <input type="file" id="csvInput" accept=".csv,.xlsx,.xls" hidden>
-                <div class="upload-content">
-                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <p>Drag & drop your CSV or Excel file here</p>
-                    <span>or</span>
-                    <button class="btn-primary" id="browseBtn">Browse Files</button>
-                </div>
-            </div>
-            <div class="file-info" id="fileInfo"></div>
-        </section>
+      <section class="upload-section">
+        <div class="upload-area" id="dropZone">
+          <input type="file" id="csvInput" accept=".csv,.xlsx,.xls" hidden />
+          <div class="upload-content">
+            <svg
+              class="upload-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <p>Drag & drop your CSV or Excel file here</p>
+            <span>or</span>
+            <button class="btn-primary" id="browseBtn">Browse Files</button>
+          </div>
+        </div>
+        <div class="file-info" id="fileInfo"></div>
+      </section>
 
-        <section class="format-help">
-            <details>
-                <summary>Supported Formats</summary>
-                <div class="format-content">
-                    <p><strong>Workday Academic Progress Report (Recommended)</strong></p>
-                    <p>Export your academic progress report directly from Workday as CSV or Excel. The app will automatically parse columns like:</p>
-                    <ul>
-                        <li><strong>Requirement</strong> - Course requirement category</li>
-                        <li><strong>Satisfied With Registrations Used</strong> - Course code and name</li>
-                        <li><strong>Academic Period</strong> - Semester (e.g., "2024 Fall Semester")</li>
-                        <li><strong>Credits</strong> - Credit hours</li>
-                        <li><strong>Grade</strong> - Letter grade (A, B+, C-, etc.)</li>
-                    </ul>
-                    <p><strong>Simple Format</strong></p>
-                    <p>Or use a simple CSV/Excel with these columns:</p>
-                    <pre>Date,Course,Grade,Assignment
+      <section class="format-help">
+        <details>
+          <summary>Supported Formats</summary>
+          <div class="format-content">
+            <p>
+              <strong>Workday Academic Progress Report (Recommended)</strong>
+            </p>
+            <p>
+              Export your academic progress report directly from Workday as CSV
+              or Excel. The app will automatically parse columns like:
+            </p>
+            <ul>
+              <li>
+                <strong>Requirement</strong> - Course requirement category
+              </li>
+              <li>
+                <strong>Satisfied With Registrations Used</strong> - Course code
+                and name
+              </li>
+              <li>
+                <strong>Academic Period</strong> - Semester (e.g., "2024 Fall
+                Semester")
+              </li>
+              <li><strong>Credits</strong> - Credit hours</li>
+              <li><strong>Grade</strong> - Letter grade (A, B+, C-, etc.)</li>
+            </ul>
+            <p><strong>Simple Format</strong></p>
+            <p>Or use a simple CSV/Excel with these columns:</p>
+            <pre>
+Date,Course,Grade,Assignment
 Fall 2023,Math 101,85,Midterm
-Fall 2023,Math 101,92,Final</pre>
-                    <p><em>Supports: .csv, .xlsx, .xls files</em></p>
-                </div>
-            </details>
-        </section>
+Fall 2023,Math 101,92,Final</pre
+            >
+            <p><em>Supports: .csv, .xlsx, .xls files</em></p>
+          </div>
+        </details>
+      </section>
 
-        <section class="controls" id="controls" hidden>
-            <div class="control-group">
-                <label for="courseFilter">Filter by Course:</label>
-                <select id="courseFilter">
-                    <option value="all">All Courses</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="chartType">Chart Type:</label>
-                <select id="chartType">
-                    <option value="line">Line Chart</option>
-                    <option value="bar">Bar Chart</option>
-                    <option value="radar">Radar Chart</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="showAverage">
-                    <input type="checkbox" id="showAverage" checked>
-                    Show Average Line
-                </label>
-            </div>
-        </section>
+      <section class="controls" id="controls" hidden>
+        <div class="control-group">
+          <label for="courseFilter">Filter by Course:</label>
+          <select id="courseFilter">
+            <option value="all">All Courses</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="chartType">Chart Type:</label>
+          <select id="chartType">
+            <option value="line">Line Chart</option>
+            <option value="bar">Bar Chart</option>
+            <option value="radar">Radar Chart</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="showAverage">
+            <input type="checkbox" id="showAverage" checked />
+            Show Average Line
+          </label>
+        </div>
+      </section>
 
-        <section class="charts-section" id="chartsSection" hidden>
-            <div class="chart-container">
-                <h2>Grade Trends Over Time</h2>
-                <canvas id="trendChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <h2>Courses Ranked by Grade</h2>
-                <canvas id="comparisonChart"></canvas>
-            </div>
-            <div class="stats-container" id="statsContainer">
-                <h2>Statistics Summary</h2>
-                <div class="stats-grid" id="statsGrid"></div>
-            </div>
-            <div class="degree-progress-container" id="degreeProgressSection" hidden>
-                <h2>Degree Progress</h2>
-                <div id="degreeProgressContent"></div>
-            </div>
-        </section>
+      <section class="charts-section" id="chartsSection" hidden>
+        <div class="chart-container">
+          <h2>Grade Trends Over Time</h2>
+          <canvas id="trendChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h2>Courses Ranked by Grade</h2>
+          <canvas id="comparisonChart"></canvas>
+        </div>
+        <div class="stats-container" id="statsContainer">
+          <h2>Statistics Summary</h2>
+          <div class="stats-grid" id="statsGrid"></div>
+        </div>
+        <div
+          class="degree-progress-container"
+          id="degreeProgressSection"
+          hidden
+        >
+          <h2>Degree Progress</h2>
+          <div id="degreeProgressContent"></div>
+        </div>
+      </section>
     </div>
 
     <script src="app.js"></script>
-</body>
+  </body>
 </html>
