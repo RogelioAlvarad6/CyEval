@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Grade Trends Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Course Grade Trends Visualizer</h1>
+            <p>Upload your Workday academic report or grade data to visualize performance over time</p>
+        </header>
+
+        <section class="upload-section">
+            <div class="upload-area" id="dropZone">
+                <input type="file" id="csvInput" accept=".csv,.xlsx,.xls" hidden>
+                <div class="upload-content">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p>Drag & drop your CSV or Excel file here</p>
+                    <span>or</span>
+                    <button class="btn-primary" id="browseBtn">Browse Files</button>
+                </div>
+            </div>
+            <div class="file-info" id="fileInfo"></div>
+        </section>
+
+        <section class="format-help">
+            <details>
+                <summary>Supported Formats</summary>
+                <div class="format-content">
+                    <p><strong>Workday Academic Progress Report (Recommended)</strong></p>
+                    <p>Export your academic progress report directly from Workday as CSV or Excel. The app will automatically parse columns like:</p>
+                    <ul>
+                        <li><strong>Requirement</strong> - Course requirement category</li>
+                        <li><strong>Satisfied With Registrations Used</strong> - Course code and name</li>
+                        <li><strong>Academic Period</strong> - Semester (e.g., "2024 Fall Semester")</li>
+                        <li><strong>Credits</strong> - Credit hours</li>
+                        <li><strong>Grade</strong> - Letter grade (A, B+, C-, etc.)</li>
+                    </ul>
+                    <p><strong>Simple Format</strong></p>
+                    <p>Or use a simple CSV/Excel with these columns:</p>
+                    <pre>Date,Course,Grade,Assignment
+Fall 2023,Math 101,85,Midterm
+Fall 2023,Math 101,92,Final</pre>
+                    <p><em>Supports: .csv, .xlsx, .xls files</em></p>
+                </div>
+            </details>
+        </section>
+
+        <section class="controls" id="controls" hidden>
+            <div class="control-group">
+                <label for="courseFilter">Filter by Course:</label>
+                <select id="courseFilter">
+                    <option value="all">All Courses</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="chartType">Chart Type:</label>
+                <select id="chartType">
+                    <option value="line">Line Chart</option>
+                    <option value="bar">Bar Chart</option>
+                    <option value="radar">Radar Chart</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="showAverage">
+                    <input type="checkbox" id="showAverage" checked>
+                    Show Average Line
+                </label>
+            </div>
+        </section>
+
+        <section class="charts-section" id="chartsSection" hidden>
+            <div class="chart-container">
+                <h2>Grade Trends Over Time</h2>
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h2>Courses Ranked by Grade</h2>
+                <canvas id="comparisonChart"></canvas>
+            </div>
+            <div class="stats-container" id="statsContainer">
+                <h2>Statistics Summary</h2>
+                <div class="stats-grid" id="statsGrid"></div>
+            </div>
+            <div class="degree-progress-container" id="degreeProgressSection" hidden>
+                <h2>Degree Progress</h2>
+                <div id="degreeProgressContent"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
