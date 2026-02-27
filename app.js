@@ -6,18 +6,18 @@ class GradeVisualizer {
     this.requirements = { satisfied: [], inProgress: [], notSatisfied: [] };
     this.charts = {};
     this.colors = [
-      '#4f46e5',
-      '#06b6d4',
-      '#10b981',
-      '#f59e0b',
-      '#ef4444',
-      '#8b5cf6',
-      '#ec4899',
-      '#14b8a6',
-      '#84cc16',
-      '#f97316',
-      '#6366f1',
-      '#22d3d8',
+      '#c9a84c',
+      '#d4813a',
+      '#7aab6e',
+      '#8b9dc3',
+      '#b85c4a',
+      '#9b7fb6',
+      '#c4875a',
+      '#6a9e8f',
+      '#d4b483',
+      '#8faacc',
+      '#c96a7a',
+      '#7a9e7a',
     ];
 
     // Letter grade to numeric conversion
@@ -536,7 +536,7 @@ class GradeVisualizer {
       datasets.push({
         label: 'Semester Average',
         data: avgValues,
-        borderColor: '#94a3b8',
+        borderColor: '#6b5f4e',
         borderDash: [5, 5],
         backgroundColor: 'transparent',
         fill: false,
@@ -624,11 +624,11 @@ class GradeVisualizer {
 
     // Generate colors based on grade (green for high, red for low)
     const backgroundColors = courseStats.map((s) => {
-      if (s.grade >= 90) return '#10b981'; // Green - A
-      if (s.grade >= 80) return '#22d3d8'; // Cyan - B
-      if (s.grade >= 70) return '#f59e0b'; // Yellow - C
-      if (s.grade >= 60) return '#f97316'; // Orange - D
-      return '#ef4444'; // Red - F
+      if (s.grade >= 90) return '#7aab6e'; // Sage green - A
+      if (s.grade >= 80) return '#c9a84c'; // Gold - B
+      if (s.grade >= 70) return '#c9873a'; // Amber - C
+      if (s.grade >= 60) return '#b87a3a'; // Burnt orange - D
+      return '#b85c4a'; // Terracotta - F
     });
 
     // Calculate dynamic height based on number of courses (28px per course, min 250px, max 700px)
